@@ -1,0 +1,81 @@
+-- Q1
+SELECT c.customer_id, c.name, COUNT(o.order_id) AS order_count
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.name;
+
+-- Q7
+SELECT r.restaurant_id, r.name, COUNT(o.order_id) AS order_count
+FROM restaurants r
+JOIN orders o ON r.restaurant_id = o.restaurant_id
+GROUP BY r.restaurant_id, r.name
+HAVING COUNT(o.order_id) > 50;
+
+-- Q8
+SELECT item_name, SUM(quantity) AS total_quantity
+FROM order_items
+GROUP BY item_name
+ORDER BY total_quantity DESC
+LIMIT 1;
+
+-- Q9
+SELECT c.customer_id, c.name, SUM(o.order_value) AS total_spending
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.name
+ORDER BY total_spending DESC;
+
+-- Q10
+SELECT r.cuisine, COUNT(DISTINCT o.order_id) AS orders_per_cuisine
+FROM restaurants r
+JOIN orders o ON r.restaurant_id = o.restaurant_id
+GROUP BY r.cuisine
+ORDER BY orders_per_cuisine DESC;
+
+-- Q11
+SELECT r.restaurant_id, r.name, AVG(o.delivery_time) AS avg_delivery_time
+FROM restaurants r
+JOIN orders o ON r.restaurant_id = o.restaurant_id
+GROUP BY r.restaurant_id, r.name
+ORDER BY avg_delivery_time DESC;
+
+-- Q12
+SELECT c.customer_id, c.name, COUNT(DISTINCT o.restaurant_id) AS restaurant_count
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.name
+HAVING COUNT(DISTINCT o.restaurant_id) > 3;
+
+-- Q13
+WITH customer_spend AS (
+  SELECT c.customer_id, c.name, SUM(o.order_value) AS total_spending
+  FROM customers c
+  JOIN orders o ON c.customer_id = o.customer_id
+  GROUP BY c.customer_id, c.name
+)
+SELECT *, DENSE_RANK() OVER (ORDER BY total_spending DESC) AS rnk
+FROM customer_spend
+WHERE rnk <= 3;
+
+-- Q14
+SELECT
+  EXTRACT(YEAR FROM order_date) AS year,
+  EXTRACT(MONTH FROM order_date) AS month,
+  SUM(order_value) AS revenue
+FROM orders
+GROUP BY year, month
+ORDER BY year, month;
+
+-- Q15
+WITH customer_orders AS (
+  SELECT
+    c.customer_id,
+    COUNT(o.order_id) AS order_count,
+    SUM(o.order_value) AS total_revenue
+  FROM customers c
+  JOIN orders o ON c.customer_id = o.customer_id
+  GROUP BY c.customer_id
+)
+SELECT *
+FROM customer_orders
+WHERE order_count > 1;
